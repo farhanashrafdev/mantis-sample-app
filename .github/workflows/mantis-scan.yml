@@ -1,0 +1,73 @@
+name: Mantis AI Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  mantis-scan:
+    name: AI Red-Team Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install app dependencies
+        run: npm install
+
+      - name: Start sample app
+        run: |
+          node index.js &
+          sleep 2
+          curl -sf http://localhost:3001/health || exit 1
+
+      - name: Install Mantis
+        run: npm install -g mantis-ai
+
+      - name: Run Mantis scan (SARIF)
+        run: |
+          mantis scan \
+            --target http://localhost:3001/api/chat \
+            --format sarif \
+            --output mantis-results.sarif \
+            --timeout 30000
+        continue-on-error: true
+
+      - name: Run Mantis scan (JSON)
+        run: |
+          mantis scan \
+            --target http://localhost:3001/api/chat \
+            --format json \
+            --output mantis-results.json \
+            --timeout 30000
+        continue-on-error: true
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: mantis-results.sarif
+          category: mantis-ai-redteam
+
+      - name: Upload scan artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mantis-scan-results
+          path: |
+            mantis-results.sarif
+            mantis-results.json
