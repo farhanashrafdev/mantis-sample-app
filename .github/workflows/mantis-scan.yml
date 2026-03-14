@@ -39,6 +39,7 @@ jobs:
         run: npm install -g mantis-redteam
 
       - name: Run Mantis scan (SARIF)
+        id: sarif-scan
         run: |
           mantis scan \
             --target http://localhost:3001/api/chat \
