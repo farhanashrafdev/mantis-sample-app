@@ -1,0 +1,26 @@
+{
+  "name": "mantis-sample-app",
+  "version": "1.0.0",
+  "description": "Intentionally vulnerable mock LLM chat API for testing Mantis",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  },
+  "keywords": [
+    "mantis",
+    "llm",
+    "security",
+    "red-team",
+    "sample"
+  ],
+  "author": "farhanashrafdev",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
